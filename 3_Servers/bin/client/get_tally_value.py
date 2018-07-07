@@ -21,4 +21,4 @@ for i in range(len(fragments[0])):
 	for f in fragments:
 		tally = tally ^ int(f[i])
 	final_tally += (tally << (4 * i))
-print final_tally
+print 'Tally is %s' % final_tally
