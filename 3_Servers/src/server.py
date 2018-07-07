@@ -172,7 +172,8 @@ class LocalServer(Server):
 			for si in range(len(pstates[pi])):
 				small_lut = []
 				rows = self.b.ssl_sock.recv(128)
-				row = rows[32 * (3 - pvis[pi][si]): 32 * (3 - pvis[pi][si]) + 32]
+				#row = rows[32 * (3 - pvis[pi][si]): 32 * (3 - pvis[pi][si]) + 32]
+				row = rows[32 * vis[si]: 32 * vis[si] + 32]
 				for by in row:
 					small_lut.append(by)
 				index = struct.unpack("<B", self.c.ssl_sock.recv(1))[0]
@@ -237,6 +238,7 @@ class LocalServer(Server):
 				if carry == None:
 					continue
 				states.append((tally_window[i] << 1) + carry)
+			#rstates = self.parreduces([states])[0] # Example for multiple tallies
 			rstates = self.parreduce(states)
 			rsi = 0
 			for i in range(vote_window_len):
