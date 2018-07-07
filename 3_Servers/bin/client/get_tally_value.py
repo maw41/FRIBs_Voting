@@ -4,7 +4,7 @@ import re
 print 'Please enter the outputs from the three fragment servers (a, b, c).'
 fragments = []
 for i in ('a','b','c'):
-	print 'Fragment server %s:' % (i),
+	print 'Fragment server %s:' % (i)
 	chars = []
 	c = 0
 	while c != '\n':

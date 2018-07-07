@@ -14,13 +14,13 @@ c = RemoteServerConfig()
 
 a.id = 'A'
 a.ip = '127.0.0.1'
-a.seed = 'seed'
+a.seed = 'seeda'
 a.ports = [19871, 19873]
 a.scheduler_port = 20000
 
 b.id = 'B'
 b.ip = '127.0.0.1'
-b.seed = 'seed'
+b.seed = 'seedb'
 b.ports = [19876, 19875]
 b.scheduler_port = 20001
 

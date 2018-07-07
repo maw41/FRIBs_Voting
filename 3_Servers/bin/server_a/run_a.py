@@ -20,12 +20,12 @@ c = RemoteServerConfig()
 
 b.id = 'B'
 b.ip = '127.0.0.1'
-b.seed = 'seed'
+b.seed = 'seedb'
 b.ports = [19872, 19870]
 
 c.id = 'C'
 c.ip = '127.0.0.1'
-c.seed = 'seed'
+c.seed = 'seedc'
 c.ports = [19873, 19871]
 
 

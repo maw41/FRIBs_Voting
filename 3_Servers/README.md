@@ -3,4 +3,5 @@ A cloud voting scheme implemented in FRIBs using the three-server enhanced priva
 
 ## Usage:
 
-
+## Notes:
+- The fragment servers currently all use the same certificate for network communications.
