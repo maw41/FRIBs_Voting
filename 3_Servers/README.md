@@ -6,7 +6,7 @@ A cloud voting scheme implemented in FRIBs using the three-server enhanced priva
 ```
 3_Servers> ./setup.sh
 ```
-2. Start each fragment server in a separate session. Note that the three servers need to be started within seconds of each other. This is a current limit of this implementation. 
+2. Start each fragment server in a separate session. Note that the three servers need to be started within seconds of each other (a current limitation of this implementation). 
 ```
 3_Servers/bin/server_a> python run_a.py
 3_Servers/bin/server_b> python run_b.py
