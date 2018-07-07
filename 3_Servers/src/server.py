@@ -238,7 +238,7 @@ class LocalServer(Server):
 				if carry == None:
 					continue
 				states.append((tally_window[i] << 1) + carry)
-			#rstates = self.parreduces([states])[0] # Example for multiple tallies
+			#rstates = self.parreduces([states, states, states])[0] # Example for multiple tallies
 			rstates = self.parreduce(states)
 			rsi = 0
 			for i in range(vote_window_len):
