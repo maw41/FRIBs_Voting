@@ -18,10 +18,10 @@ class Controller:
 			if rs.ip == None:
 				remote_server = RemoteServer()
 			else:
-				remote_server = RemoteServer(rs.ip, rs.seed, rs.ports[0], rs.ports[1], rs.scheduler_port)
+				remote_server = RemoteServer(rs.ip, rs.seed, rs.ports[0], rs.ports[1], rs.ports[2], rs.ports[3], rs.id, rs.scheduler_port)
 			remote_server.loadLut(rs.olut)
 			self.remote_servers.append(remote_server)
-		self.local_server = LocalServer(self.remote_servers[0], self.remote_servers[1], self.remote_servers[2])
+		self.local_server = LocalServer(self.remote_servers)
 		self.local_server.loadResultLut(config.result_lut)
 		self.local_server.initiateTally(config.init_tally, 24)
 		self.client_listener = Client(config.client_ip, config.client_port, self.client_queue)
@@ -36,14 +36,13 @@ class Controller:
 			pool = self.scheduler.getNextPool()
 			if pool == None or len(pool) == 0:
 				sleep(0.5)
+				#idle_count += 1
+				#if idle_count > 20:
+				#	for i in range((self.local_server.tally_length / 3) - 1):
+				#		self.local_server.voteaddQ.put(None)
+				#	idle_count = 0
 				continue
-				idle_count += 1
-				if idle_count > 20:
-					for i in range((self.local_server.tally_length / 4) - 1):
-						self.local_server.voteaddQ.put(None)
-					idle_count = 0
-				continue
-			idle_count = 0
+			#idle_count = 0
 			for v in pool:
 				self.local_server.voteaddQ.put(self.votes[pool[v]])
 			# TODO: remove this, it's only for examples
