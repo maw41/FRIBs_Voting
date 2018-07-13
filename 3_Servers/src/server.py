@@ -39,6 +39,9 @@ class RemoteServer(Server):
 		except:
 			return False	
 
+	def stop(self):
+		return self.close()
+
 	def close(self):
 		return self.ssl_sock.close()
 	
@@ -60,6 +63,24 @@ class LocalServer(Server):
 		self.qosb = Queue()
 		self.qosc = Queue()
 		self.voteaddQ = Queue()
+		self.randomQ = Queue()
+		self.conn_sockets = []
+		self.tally_window = []
+		self.votes_processed = 0
+		self.states_reached = []
+		self.states_trans = []
+
+	def stop(self):
+		self.ssl_bsock.close()
+		self.ssl_csock.close()
+		self.bsock.close()
+		self.csock.close()
+		for s in self.conn_sockets:
+			try:
+				s.shutdown(socket.SHUT_RDWR)
+			except:
+				pass
+			s.close()
 
 	def initiateTally(self, value, length):
 		assert(length % 3 == 0)	
@@ -69,6 +90,7 @@ class LocalServer(Server):
 	def listeningB(self):
 		self.ssl_bsock.listen(10)
 		conn, addr = self.ssl_bsock.accept() 
+		self.conn_sockets.append(conn)
 		print 'Listen Connected'
 		while True:
 			b1 = conn.recv(1)
@@ -88,15 +110,19 @@ class LocalServer(Server):
 					if i == ri and j == osb_new:
 						osbf = tmp_r
 						osbi = osb_new
-
-				
+			ran = random.randint(0,31)
+			self.randomQ.put(ran)
+			osbf = osbf ^ ran	
 			conn.sendall(struct.pack("<B", osbi) + struct.pack("<B", osbf))
 		self.ssl_bsock.close()
+		self.bsock.close()
+		conn.close()
 		thread.exit()
 
 	def listeningC(self):
 		self.ssl_csock.listen(10)
 		conn, addr = self.ssl_csock.accept() 
+		self.conn_sockets.append(conn)
 		print 'Listen Connected'
 		while True:
 			b4 = conn.recv(4)
@@ -113,6 +139,8 @@ class LocalServer(Server):
 					rbs += struct.pack("<B", struct.unpack("<B", rb)[0] ^ tmp_r)
 			conn.sendall(rbs)	
 		self.ssl_csock.close()
+		self.csock.close()
+		conn.close()
 		thread.exit()
 
 	def listen(self):
@@ -120,6 +148,8 @@ class LocalServer(Server):
 		self.csock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.bsock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 		self.csock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+		self.bsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		self.csock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.bsock.bind(('0.0.0.0', self.b.lport))
 		self.csock.bind(('0.0.0.0', self.c.lport))
 		self.ssl_bsock = ssl.wrap_socket(self.bsock, keyfile='server_key.pem', certfile='server_cert.pem', server_side=True)
@@ -218,17 +248,23 @@ class LocalServer(Server):
 				small_lut.append(by)
 			index = struct.unpack("<B", self.c.ssl_sock.recv(1))[0]
 			flip = struct.unpack("<B", self.c.ssl_sock.recv(1))[0]
-			results.append(struct.unpack("<B", small_lut[index])[0] ^ flip)
+			ran = self.randomQ.get()
+			results.append(struct.unpack("<B", small_lut[index])[0] ^ flip ^ ran)
 		return results
 
 	def addVote(self):
-		sleep(10)
-		tally_window = []
+		# Testing Vars
+		prev_rstates = []
+		for i in range(32):
+			self.states_reached.append(0)
+			self.states_trans.append(0)
+					
+
 		carry_window = []
 		vote_window_len = self.tally_length / 4
 		tand = 15
 		for i in range(vote_window_len):
-			tally_window.append((self.tally & tand) >> (i * 4))
+			self.tally_window.append((self.tally & tand) >> (i * 4))
 			carry_window.append(None)
 		while True:
 			carry_window[0] = self.voteaddQ.get()
@@ -237,19 +273,31 @@ class LocalServer(Server):
 				carry = carry_window[i]
 				if carry == None:
 					continue
-				states.append((tally_window[i] << 1) + carry)
+				states.append((self.tally_window[i] << 1) + carry)
 			#rstates = self.parreduces([states, states, states])[0] # Example for multiple tallies
 			rstates = self.parreduce(states)
+			for s in rstates:
+				self.states_reached[s] += 1
+			for s in range(len(prev_rstates)):
+				if prev_rstates[s] == 1:
+					self.states_trans[rstates[s]] += 1
+			prev_rstates = rstates
 			rsi = 0
 			for i in range(vote_window_len):
 				if carry_window[i] == None:
 					continue
 				carry_window[i] = (rstates[rsi] & 16) >> 4
-				tally_window[i] = (rstates[rsi] & 15)
+				self.tally_window[i] = (rstates[rsi] & 15)
 				rsi += 1
 			for i in range(vote_window_len-1, 0, -1):
 				carry_window[i] = carry_window[i-1]
-			print tally_window
-			
+			self.votes_processed += 1
 			
 		return
+
+
+	def getTally(self):
+		return self.votes_processed, self.tally_window
+	
+	def getStats(self):
+		return self.states_reached, self.states_trans

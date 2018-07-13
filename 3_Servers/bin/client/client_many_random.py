@@ -16,29 +16,16 @@ if len(sys.argv) != 3:
 start_voter_id = int(sys.argv[1])
 number_of_votes = int(sys.argv[2])
 
-print 'Please enter your vote for %s voters (y/n):' % number_of_votes,
-v = sys.stdin.read(1)
-print ''
-vi = 0
-vecs = []
-if v == 'y':
-	vi = 1
-else:
-	vecs.append([0,0,0])
-	vecs.append([0,1,1])
-	vecs.append([1,0,1])
-	vecs.append([1,1,0])
 
 for voter_id in range(start_voter_id, start_voter_id+number_of_votes):
 	print "Voter %d..." % voter_id,
+	vi = random.randint(0,1)
 	fragments = []
 	ri = 0
 	for i in range(2):
 		fragments.append(random.randint(0,1))
 		ri = ri ^ fragments[i]
 	fragments.append(ri ^ vi)
-	#fragments = vecs[voter_id % len(vecs)]
-	print fragments
 
 	servers_config = [('127.0.0.1', 11000),('127.0.0.1', 11001),('127.0.0.1', 11002)]
 	servers = []

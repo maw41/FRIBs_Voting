@@ -45,9 +45,3 @@ config.init_tally = 0
 
 controller = Controller(config)
 controller.start()
-
-while not controller.running.wait():
-	pass
-
-controller.stop()
-print 'Done'

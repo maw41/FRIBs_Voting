@@ -12,6 +12,7 @@ SERVERS = 3
 class Scheduler:
 	def __init__(self, server_ip, server_port, sid):
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.server_address = (server_ip, server_port)
 		self.client_socks = []
 		self.sid = sid
@@ -29,6 +30,8 @@ class Scheduler:
 			self.pools.append({})
 		self.nextnextPool = None
 		self.nextPool = None
+		self.conn_sockets = []
+		self.setting_up = threading.Event()
 
 	def getNextPool(self):
 		# Stop all transactions for a bit
@@ -151,6 +154,13 @@ class Scheduler:
 	
 	def stop(self):
 		self.sock.close()				
+		self.sendingCondition.acquire()
+		for s in self.conn_sockets + self.client_socks:
+			try:
+				s.shutdown(socket.SHUT_RDWR)
+			except:
+				pass
+			s.close()
 
 	def processNewVoterQ(self):
 		while True:
@@ -166,16 +176,19 @@ class Scheduler:
 
 	def connecter(self):
 		self.sock.bind(self.server_address)
-		self.sock.settimeout(10)
+		self.sock.settimeout(2)
 		self.sock.listen(1)
-		while True:
+		while len(self.client_socks) < 2:
 			try:
 				connection, client_address = self.sock.accept()
+				self.conn_sockets.append(connection)
 			except:
-				break
+				continue
 			self.client_socks.append(connection)
 			lthread = Thread(target = self.listener, args = (connection,))
 			lthread.start()
+		self.sock.close()				
+		self.setting_up.set()
 		print 'Connecter closed'
 
 	def sendRotHash(self, h):
