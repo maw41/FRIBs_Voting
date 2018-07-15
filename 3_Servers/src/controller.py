@@ -84,19 +84,24 @@ class Controller:
 				self.stop()
 				break
 			if cmd == 'print tally':
-				print self.local_server.getTally()
+				num_votes, tally = self.local_server.getTally()
+				print 'Number of votes: %s' % num_votes
+				print 'Tally: %s' % tally
 			elif cmd == 'flush tally':
 				for i in range(0,6):
 					self.local_server.voteaddQ.put(0)
 			elif cmd == 'print stats':
-				print self.local_server.getStats()
+				states_reached, states_trans = self.local_server.getStats()
+				print 'States reached during processing:'
+				for i in range(len(states_reached)):
+					print 'State %s:\t%s' % (i, states_reached[i])
+				print '\nStates transisitions from state 1:'
+				for i in range(len(states_trans)):
+					print 'State %s:\t%s' % (i, states_trans[i])
 
 	def stop(self):
 		print "Stopping."
 		self.client_listener.stop()
-		#for i in range(self.local_server.tally_length / 3):
-		#	self.local_server.voteaddQ.put(0)
-		#sleep(1)
 		self.scheduler.stop()
 		for remote_server in self.remote_servers[1:]:
 			remote_server.stop()
