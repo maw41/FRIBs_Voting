@@ -46,7 +46,7 @@ class Controller:
 			for v in pool:
 				self.local_server.voteaddQ.put(self.votes[pool[v]])
 			# TODO: remove this, it's only for examples
-			for i in range(0,6):
+			for i in range(0,8):
 				self.local_server.voteaddQ.put(0)
 			#sleep(0.5)
 
