@@ -1,7 +1,7 @@
 import sys
 import re
 
-print 'Please enter the outputs from the three fragment servers (a, b, c).'
+print 'Please enter the outputs from the three fragment servers (a, b, c, d, e, f).'
 fragments = []
 for i in ('a','b','c','d','e','f'):
 	print 'Fragment server %s:' % (i)
