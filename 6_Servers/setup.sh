@@ -1,7 +1,7 @@
 #!/bin/bash
-#cd table_generation
-#./generate.sh
-#cd ..
+cd table_generation
+./generate.sh
+cd ..
 OUTPUTDIR="./table_generation/output/"$(ls -t ./table_generation/output | head -1)
 arr=( "a" "b" "c" "d" "e" "f" )
 for i in "${arr[@]}"

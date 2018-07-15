@@ -188,8 +188,6 @@ class LocalServer(Server):
 				random.shuffle(vec)
 				vi = vec.index(osa)
 				vis.append(vi)
-				#self.b.sock.sendall(vec[0]+vec[1]+vec[2]+vec[3])
-				#self.c.sock.sendall(struct.pack("<B", vi))
 				sendb += vec[0]+vec[1]+vec[2]+vec[3]
 				sendc += struct.pack("<B", vi)
 			self.b.ssl_sock.sendall(sendb)
@@ -202,13 +200,13 @@ class LocalServer(Server):
 			for si in range(len(pstates[pi])):
 				small_lut = []
 				rows = self.b.ssl_sock.recv(128)
-				#row = rows[32 * (3 - pvis[pi][si]): 32 * (3 - pvis[pi][si]) + 32]
 				row = rows[32 * vis[si]: 32 * vis[si] + 32]
 				for by in row:
 					small_lut.append(by)
 				index = struct.unpack("<B", self.c.ssl_sock.recv(1))[0]
 				flip = struct.unpack("<B", self.c.ssl_sock.recv(1))[0]
-				results.append(struct.unpack("<B", small_lut[index])[0] ^ flip)
+				ran = self.randomQ.get()
+				results.append(struct.unpack("<B", small_lut[index])[0] ^ flip ^ ran)
 			presults.append(results)
 		return presults
 
@@ -231,8 +229,6 @@ class LocalServer(Server):
 			random.shuffle(vec)
 			vi = vec.index(osa)
 			vis.append(vi)
-			#self.b.sock.sendall(vec[0]+vec[1]+vec[2]+vec[3])
-			#self.c.sock.sendall(struct.pack("<B", vi))
 			sendb += vec[0]+vec[1]+vec[2]+vec[3]
 			sendc += struct.pack("<B", vi)
 		self.b.ssl_sock.sendall(sendb)
@@ -242,7 +238,6 @@ class LocalServer(Server):
 		for si in range(len(states)):
 			small_lut = []
 			rows = self.b.ssl_sock.recv(128)
-			#row = rows[32 * (3 - vis[si]): 32 * (3 - vis[si]) + 32]
 			row = rows[32 * vis[si]: 32 * vis[si] + 32]
 			for by in row:
 				small_lut.append(by)

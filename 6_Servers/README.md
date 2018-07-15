@@ -76,3 +76,4 @@ ps -a | grep "python" | awk '{print $1}' | xargs kill -9
 ## Notes:
 - This code is currently for example purposes and it will print the tally each time a vote is added.
 - It will also add eight zero votes after each pool to make sure the last tally printed is correct, thus flushing the pipeline.
+- This version is not optimised for performance.
